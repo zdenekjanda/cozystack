@@ -66,7 +66,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
-          git commit -m "Prepare release ${GITHUB_REF#refs/tags/}" || echo "No changes to commit"
+          git commit -m "Prepare release ${GITHUB_REF#refs/tags/}" -s || echo "No changes to commit"
 
       - name: Create release branch
         if: steps.check_release.outputs.skip == 'false'
@@ -97,8 +97,8 @@ jobs:
                 repo: context.repo.repo,
                 head: branch,
                 base: base,
-                title: `${version}`,
-                body: `This PR prepares the release \`${version}\`.`,
+                title: `Prepare release v${version}`,
+                body: `This PR prepares the release \`v${version}\`.`,
                 draft: true
               });
               console.log(`Created draft pull request from ${branch} to ${base}`);
