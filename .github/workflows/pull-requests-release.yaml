@@ -1,4 +1,4 @@
-name: Verify and Finalize Release PR
+name: Releasing PR
 
 on:
   pull_request:
