@@ -6,13 +6,15 @@ on:
 
 jobs:
   e2e:
-    name: Build and Test
+    name: Build and Test for Pull Requests
     runs-on: [self-hosted]
     permissions:
       contents: read
       packages: write
 
-    if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'ok-to-test') &&
+      !contains(github.event.pull_request.labels.*.name, 'release')
 
     steps:
       - name: Checkout code
