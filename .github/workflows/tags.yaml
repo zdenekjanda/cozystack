@@ -133,7 +133,7 @@ jobs:
 
       - name: Upload assets
         if: steps.check_release.outputs.skip == 'false'
-        run: make upload_assets
+        run: make upload_assets VERSION=${GITHUB_REF#refs/tags/}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
