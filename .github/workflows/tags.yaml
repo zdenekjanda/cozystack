@@ -7,7 +7,7 @@ on:
 
 jobs:
   prepare-release:
-    name: Build and Prepare Release
+    name: Prepare Release
     runs-on: [self-hosted]
     permissions:
       contents: write
@@ -96,7 +96,7 @@ jobs:
                 repo: context.repo.repo,
                 head: branch,
                 base: base,
-                title: `Prepare release v${version}`,
+                title: `Release v${version}`,
                 body:
                   `This PR prepares the release \`v${version}\`.\n` +
                   `(Please merge it before releasing draft)`,

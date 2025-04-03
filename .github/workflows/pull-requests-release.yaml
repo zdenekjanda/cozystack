@@ -6,7 +6,7 @@ on:
 
 jobs:
   verify:
-    name: Test Release PR
+    name: Test Release
     runs-on: [self-hosted]
     permissions:
       contents: read
