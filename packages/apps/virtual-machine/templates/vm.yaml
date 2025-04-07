@@ -69,6 +69,12 @@ spec:
             memory: {{ .Values.resources.memory | quote }}
         {{- end }}
         devices:
+          {{- if .Values.gpus }}
+          gpus:
+          {{- range $i, $gpu := .Values.gpus }}
+          - deviceName: {{ $gpu.name }}
+          {{- end }}
+          {{- end }}
           disks:
           - disk:
               bus: scsi

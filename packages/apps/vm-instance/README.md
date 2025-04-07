@@ -45,6 +45,7 @@ virtctl ssh <user>@<vm>
 | `instanceType`     | Virtual Machine instance type                                                                              | `u1.medium`      |
 | `instanceProfile`  | Virtual Machine prefferences profile                                                                       | `ubuntu`         |
 | `disks`            | List of disks to attach                                                                                    | `[]`             |
+| `gpus`             | List of GPUs to attach                                                                                     | `[]`             |
 | `resources.cpu`    | The number of CPU cores allocated to the virtual machine                                                   | `""`             |
 | `resources.memory` | The amount of memory allocated to the virtual machine                                                      | `""`             |
 | `sshKeys`          | List of SSH public keys for authentication. Can be a single key or a list of keys.                         | `[]`             |
