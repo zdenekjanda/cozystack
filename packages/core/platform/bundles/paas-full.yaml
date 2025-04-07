@@ -153,6 +153,17 @@ releases:
   namespace: cozy-kubevirt-cdi
   dependsOn: [cilium,kubeovn,kubevirt-cdi-operator]
 
+- name: gpu-operator
+  releaseName: gpu-operator
+  chart: cozy-gpu-operator
+  namespace: cozy-gpu-operator
+  privileged: true
+  optional: true
+  dependsOn: [cilium,kubeovn]
+  valuesFiles:
+  - values.yaml
+  - values-talos.yaml
+
 - name: metallb
   releaseName: metallb
   chart: cozy-metallb
