@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -33,6 +34,12 @@ type WorkloadMonitorReconciler struct {
 // +kubebuilder:rbac:groups=cozystack.io,resources=workloads,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cozystack.io,resources=workloads/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;watch
+
+// isPVCReady checks if the PVC is bound
+func (r *WorkloadMonitorReconciler) isPVCReady(pvc *corev1.PersistentVolumeClaim) bool {
+	return pvc.Status.Phase == corev1.ClaimBound
+}
 
 // isPodReady checks if the Pod is in the Ready condition.
 func (r *WorkloadMonitorReconciler) isPodReady(pod *corev1.Pod) bool {
@@ -86,6 +93,48 @@ func updateOwnerReferences(obj metav1.Object, monitor client.Object) {
 
 	// Update the owner references of the object
 	obj.SetOwnerReferences(owners)
+}
+
+// reconcilePVCForMonitor creates or updates a Workload object for the given PVC and WorkloadMonitor.
+func (r *WorkloadMonitorReconciler) reconcilePVCForMonitor(
+	ctx context.Context,
+	monitor *cozyv1alpha1.WorkloadMonitor,
+	pvc corev1.PersistentVolumeClaim,
+) error {
+	logger := log.FromContext(ctx)
+	workload := &cozyv1alpha1.Workload{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("pvc-%s", pvc.Name),
+			Namespace: pvc.Namespace,
+		},
+	}
+
+	resources := make(map[string]resource.Quantity)
+
+	for resourceName, resourceQuantity := range pvc.Status.Capacity {
+		resources[resourceName.String()] = resourceQuantity
+	}
+
+	_, err := ctrl.CreateOrUpdate(ctx, r.Client, workload, func() error {
+		// Update owner references with the new monitor
+		updateOwnerReferences(workload.GetObjectMeta(), monitor)
+
+		workload.Labels = pvc.Labels
+
+		// Fill Workload status fields:
+		workload.Status.Kind = monitor.Spec.Kind
+		workload.Status.Type = monitor.Spec.Type
+		workload.Status.Resources = resources
+		workload.Status.Operational = r.isPVCReady(&pvc)
+
+		return nil
+	})
+	if err != nil {
+		logger.Error(err, "Failed to CreateOrUpdate Workload", "workload", workload.Name)
+		return err
+	}
+
+	return nil
 }
 
 // reconcilePodForMonitor creates or updates a Workload object for the given Pod and WorkloadMonitor.
@@ -205,6 +254,24 @@ func (r *WorkloadMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 	}
 
+	pvcList := &corev1.PersistentVolumeClaimList{}
+	if err := r.List(
+		ctx,
+		pvcList,
+		client.InNamespace(monitor.Namespace),
+		client.MatchingLabels(monitor.Spec.Selector),
+	); err != nil {
+		logger.Error(err, "Unable to list PVCs for WorkloadMonitor", "monitor", monitor.Name)
+		return ctrl.Result{}, err
+	}
+
+	for _, pvc := range pvcList.Items {
+		if err := r.reconcilePVCForMonitor(ctx, monitor, pvc); err != nil {
+			logger.Error(err, "Failed to reconcile Workload for PVC", "PVC", pvc.Name)
+			continue
+		}
+	}
+
 	// Update WorkloadMonitor status based on observed pods
 	monitor.Status.ObservedReplicas = observedReplicas
 	monitor.Status.AvailableReplicas = availableReplicas
@@ -233,41 +300,51 @@ func (r *WorkloadMonitorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		// Also watch Pod objects and map them back to WorkloadMonitor if labels match
 		Watches(
 			&corev1.Pod{},
-			handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, obj client.Object) []reconcile.Request {
-				pod, ok := obj.(*corev1.Pod)
-				if !ok {
-					return nil
-				}
-
-				var monitorList cozyv1alpha1.WorkloadMonitorList
-				// List all WorkloadMonitors in the same namespace
-				if err := r.List(ctx, &monitorList, client.InNamespace(pod.Namespace)); err != nil {
-					return nil
-				}
-
-				// Match each monitor's selector with the Pod's labels
-				var requests []reconcile.Request
-				for _, m := range monitorList.Items {
-					matches := true
-					for k, v := range m.Spec.Selector {
-						if podVal, exists := pod.Labels[k]; !exists || podVal != v {
-							matches = false
-							break
-						}
-					}
-					if matches {
-						requests = append(requests, reconcile.Request{
-							NamespacedName: types.NamespacedName{
-								Namespace: m.Namespace,
-								Name:      m.Name,
-							},
-						})
-					}
-				}
-				return requests
-			}),
+			handler.EnqueueRequestsFromMapFunc(mapObjectToMonitor(&corev1.Pod{}, r.Client)),
+		).
+		// Watch PVCs as well
+		Watches(
+			&corev1.PersistentVolumeClaim{},
+			handler.EnqueueRequestsFromMapFunc(mapObjectToMonitor(&corev1.PersistentVolumeClaim{}, r.Client)),
 		).
 		// Watch for changes to Workload objects we create (owned by WorkloadMonitor)
 		Owns(&cozyv1alpha1.Workload{}).
 		Complete(r)
+}
+
+func mapObjectToMonitor[T client.Object](_ T, c client.Client) func(ctx context.Context, obj client.Object) []reconcile.Request {
+	return func(ctx context.Context, obj client.Object) []reconcile.Request {
+		concrete, ok := obj.(T)
+		if !ok {
+			return nil
+		}
+
+		var monitorList cozyv1alpha1.WorkloadMonitorList
+		// List all WorkloadMonitors in the same namespace
+		if err := c.List(ctx, &monitorList, client.InNamespace(concrete.GetNamespace())); err != nil {
+			return nil
+		}
+
+		labels := concrete.GetLabels()
+		// Match each monitor's selector with the Pod's labels
+		var requests []reconcile.Request
+		for _, m := range monitorList.Items {
+			matches := true
+			for k, v := range m.Spec.Selector {
+				if labelVal, exists := labels[k]; !exists || labelVal != v {
+					matches = false
+					break
+				}
+			}
+			if matches {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Namespace: m.Namespace,
+						Name:      m.Name,
+					},
+				})
+			}
+		}
+		return requests
+	}
 }
