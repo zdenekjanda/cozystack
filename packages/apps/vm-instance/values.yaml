@@ -49,3 +49,12 @@ sshKeys: []
 ##
 cloudInit: |
   #cloud-config
+
+## @param cloudInitSeed A seed string to generate an SMBIOS UUID for the VM.
+cloudInitSeed: ""
+## Change it to any new value to force a full cloud-init reconfiguration. Change it when you want to apply
+## to an existing VM settings that are usually written only once, like new SSH keys or new network configuration.
+## An empty value does nothing (and the existing UUID is not reverted). Please note that changing this value
+## does not trigger a VM restart. You must perform the restart separately.
+## Example:
+## cloudInitSeed: "upd1"

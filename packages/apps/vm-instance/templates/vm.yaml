@@ -40,6 +40,8 @@ spec:
           requests:
             memory: {{ .Values.resources.memory | quote }}
         {{- end }}
+        firmware:
+          uuid: {{ include "virtual-machine.stableUuid" . }}
         devices:
           disks:
           {{- range $i, $disk := .Values.disks }}
