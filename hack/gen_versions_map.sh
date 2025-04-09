@@ -20,8 +20,6 @@ miss_map=$(echo "$new_map" | awk 'NR==FNR { nm[$1 " " $2] = $3; next } { if (!($
 
 # search accross all tags sorted by version
 search_commits=$(git ls-remote --tags origin | grep 'refs/tags/v' | sort -k2,2 -rV | awk '{print $1}')
-# add latest main commit to search
-search_commits="${search_commits} $(git rev-parse "origin/main")"
 
 resolved_miss_map=$(
   echo "$miss_map" | while read -r chart version commit; do
@@ -53,8 +51,8 @@ resolved_miss_map=$(
     done
     
     if [ -z "$found_tag" ]; then
-      echo "Can't find $chart $version in any version tag or in the latest main commit" >&2
-      exit 1
+      echo "Can't find $chart $version in any version tag, removing it" >&2
+      continue
     fi
     
     echo "$chart $version $found_tag"
