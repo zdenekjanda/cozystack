@@ -164,6 +164,14 @@
         }
       }
     },
+    "gpus": {
+      "type": "array",
+      "description": "List of GPUs to attach",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    },
     "resources": {
       "type": "object",
       "properties": {

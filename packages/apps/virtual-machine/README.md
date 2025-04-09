@@ -47,6 +47,7 @@ virtctl ssh <user>@<vm>
 | `systemDisk.image`        | The base image for the virtual machine. Allowed values: `ubuntu`, `cirros`, `alpine`, `fedora` and `talos` | `ubuntu`         |
 | `systemDisk.storage`      | The size of the disk allocated for the virtual machine                                                     | `5Gi`            |
 | `systemDisk.storageClass` | StorageClass used to store the data                                                                        | `replicated`     |
+| `gpus`                    | List of GPUs to attach                                                                                     | `[]`             |
 | `resources.cpu`           | The number of CPU cores allocated to the virtual machine                                                   | `""`             |
 | `resources.memory`        | The amount of memory allocated to the virtual machine                                                      | `""`             |
 | `sshKeys`                 | List of SSH public keys for authentication. Can be a single key or a list of keys.                         | `[]`             |

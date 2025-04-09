@@ -24,6 +24,12 @@ instanceProfile: ubuntu
 ## - name: example-data
 disks: []
 
+## @param gpus [array] List of GPUs to attach
+## Example:
+## gpus:
+## - name: nvidia.com/GA102GL_A10
+gpus: []
+
 ## @param resources.cpu The number of CPU cores allocated to the virtual machine
 ## @param resources.memory The amount of memory allocated to the virtual machine
 resources:
