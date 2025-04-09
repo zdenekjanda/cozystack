@@ -36,6 +36,11 @@ type WorkloadMonitorReconciler struct {
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;watch
 
+// isServiceReady checks if the service has an external IP bound
+func (r *WorkloadMonitorReconciler) isServiceReady(svc *corev1.Service) bool {
+	return len(svc.Status.LoadBalancer.Ingress) > 0
+}
+
 // isPVCReady checks if the PVC is bound
 func (r *WorkloadMonitorReconciler) isPVCReady(pvc *corev1.PersistentVolumeClaim) bool {
 	return pvc.Status.Phase == corev1.ClaimBound
@@ -93,6 +98,54 @@ func updateOwnerReferences(obj metav1.Object, monitor client.Object) {
 
 	// Update the owner references of the object
 	obj.SetOwnerReferences(owners)
+}
+
+// reconcileServiceForMonitor creates or updates a Workload object for the given Service and WorkloadMonitor.
+func (r *WorkloadMonitorReconciler) reconcileServiceForMonitor(
+	ctx context.Context,
+	monitor *cozyv1alpha1.WorkloadMonitor,
+	svc corev1.Service,
+) error {
+	logger := log.FromContext(ctx)
+	workload := &cozyv1alpha1.Workload{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("svc-%s", svc.Name),
+			Namespace: svc.Namespace,
+		},
+	}
+
+	resources := make(map[string]resource.Quantity)
+
+	q := resource.MustParse("0")
+
+	for _, ing := range svc.Status.LoadBalancer.Ingress {
+		if ing.IP != "" {
+			q.Add(resource.MustParse("1"))
+		}
+	}
+
+	resources["public-ips"] = q
+
+	_, err := ctrl.CreateOrUpdate(ctx, r.Client, workload, func() error {
+		// Update owner references with the new monitor
+		updateOwnerReferences(workload.GetObjectMeta(), monitor)
+
+		workload.Labels = svc.Labels
+
+		// Fill Workload status fields:
+		workload.Status.Kind = monitor.Spec.Kind
+		workload.Status.Type = monitor.Spec.Type
+		workload.Status.Resources = resources
+		workload.Status.Operational = r.isServiceReady(&svc)
+
+		return nil
+	})
+	if err != nil {
+		logger.Error(err, "Failed to CreateOrUpdate Workload", "workload", workload.Name)
+		return err
+	}
+
+	return nil
 }
 
 // reconcilePVCForMonitor creates or updates a Workload object for the given PVC and WorkloadMonitor.
@@ -268,6 +321,27 @@ func (r *WorkloadMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	for _, pvc := range pvcList.Items {
 		if err := r.reconcilePVCForMonitor(ctx, monitor, pvc); err != nil {
 			logger.Error(err, "Failed to reconcile Workload for PVC", "PVC", pvc.Name)
+			continue
+		}
+	}
+
+	svcList := &corev1.ServiceList{}
+	if err := r.List(
+		ctx,
+		svcList,
+		client.InNamespace(monitor.Namespace),
+		client.MatchingLabels(monitor.Spec.Selector),
+	); err != nil {
+		logger.Error(err, "Unable to list Services for WorkloadMonitor", "monitor", monitor.Name)
+		return ctrl.Result{}, err
+	}
+
+	for _, svc := range svcList.Items {
+		if svc.Spec.Type != corev1.ServiceTypeLoadBalancer {
+			continue
+		}
+		if err := r.reconcileServiceForMonitor(ctx, monitor, svc); err != nil {
+			logger.Error(err, "Failed to reconcile Workload for Service", "Service", svc.Name)
 			continue
 		}
 	}
