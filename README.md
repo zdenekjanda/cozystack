@@ -18,13 +18,13 @@ You can use Cozystack to build your own cloud or to provide a cost-effective dev
 
 ## Use-Cases
 
-* [**Using Cozystack to build public cloud**](https://cozystack.io/docs/use-cases/public-cloud/)  
+* [**Using Cozystack to build public cloud**](https://cozystack.io/docs/guides/use-cases/public-cloud/)  
 You can use Cozystack as backend for a public cloud
 
-* [**Using Cozystack to build private cloud**](https://cozystack.io/docs/use-cases/private-cloud/)  
+* [**Using Cozystack to build private cloud**](https://cozystack.io/docs/guides/use-cases/private-cloud/)  
 You can use Cozystack as platform to build a private cloud powered by Infrastructure-as-Code approach
 
-* [**Using Cozystack as Kubernetes distribution**](https://cozystack.io/docs/use-cases/kubernetes-distribution/)  
+* [**Using Cozystack as Kubernetes distribution**](https://cozystack.io/docs/guides/use-cases/kubernetes-distribution/)  
 You can use Cozystack as Kubernetes distribution for Bare Metal
 
 ## Screenshot
@@ -35,9 +35,9 @@ You can use Cozystack as Kubernetes distribution for Bare Metal
 
 The documentation is located on official [cozystack.io](https://cozystack.io) website.
 
-Read [Get Started](https://cozystack.io/docs/get-started/) section for a quick start.
+Read [Get Started](https://cozystack.io/docs/getting-started//) section for a quick start.
 
-If you encounter any difficulties, start with the [troubleshooting guide](https://cozystack.io/docs/troubleshooting/), and work your way through the process that we've outlined.
+If you encounter any difficulties, start with the [troubleshooting guide](https://cozystack.io/docs/operations/troubleshooting/), and work your way through the process that we've outlined.
 
 ## Versioning
 
