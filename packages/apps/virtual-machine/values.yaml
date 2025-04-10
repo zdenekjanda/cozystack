@@ -12,7 +12,7 @@ externalPorts:
 running: true
 
 ## @param instanceType Virtual Machine instance type
-## @param instanceProfile Virtual Machine prefferences profile
+## @param instanceProfile Virtual Machine preferences profile
 ##
 instanceType: "u1.medium"
 instanceProfile: ubuntu
@@ -55,8 +55,7 @@ sshKeys: []
 ##   password: ubuntu
 ##   chpasswd: { expire: False }
 ##
-cloudInit: |
-  #cloud-config
+cloudInit: ""
 
 ## @param cloudInitSeed A seed string to generate an SMBIOS UUID for the VM.
 cloudInitSeed: ""
