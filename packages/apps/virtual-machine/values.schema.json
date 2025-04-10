@@ -199,6 +199,11 @@
       "type": "string",
       "description": "cloud-init user data config. See cloud-init documentation for more details.",
       "default": "#cloud-config\n"
+    },
+    "cloudInitSeed": {
+      "type": "string",
+      "description": "A seed string to generate an SMBIOS UUID for the VM.",
+      "default": ""
     }
   }
 }

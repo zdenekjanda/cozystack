@@ -68,6 +68,8 @@ spec:
           requests:
             memory: {{ .Values.resources.memory | quote }}
         {{- end }}
+        firmware:
+          uuid: {{ include "virtual-machine.stableUuid" . }}
         devices:
           {{- if .Values.gpus }}
           gpus:

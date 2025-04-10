@@ -51,6 +51,7 @@ virtctl ssh <user>@<vm>
 | `sshKeys`          | List of SSH public keys for authentication. Can be a single key or a list of keys.                         | `[]`             |
 | `cloudInit`        | cloud-init user data config. See cloud-init documentation for more details.                                | `#cloud-config
 ` |
+| `cloudInitSeed`    | A seed string to generate an SMBIOS UUID for the VM.                                                       | `""`             |
 
 ## U Series
 
