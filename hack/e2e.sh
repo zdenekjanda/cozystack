@@ -318,7 +318,12 @@ kubectl patch -n tenant-root tenants.apps.cozystack.io root --type=merge -p '{"s
 timeout 60 sh -c 'until kubectl get hr -n tenant-root etcd ingress monitoring tenant-root; do sleep 1; done'
 
 # Wait for HelmReleases be installed
-kubectl wait --timeout=2m --for=condition=ready -n tenant-root hr etcd ingress monitoring tenant-root
+kubectl wait --timeout=2m --for=condition=ready -n tenant-root hr etcd ingress tenant-root
+
+if ! kubectl wait --timeout=2m --for=condition=ready -n tenant-root hr monitoring; then
+  flux reconcile hr monitoring -n tenant-root --force
+  kubectl wait --timeout=2m --for=condition=ready -n tenant-root hr monitoring
+fi
 
 kubectl patch -n tenant-root ingresses.apps.cozystack.io ingress --type=merge -p '{"spec":{
   "dashboard": true
@@ -333,7 +338,7 @@ kubectl wait --timeout=5m --for=jsonpath=.status.readyReplicas=3 -n tenant-root 
 
 # Wait for Victoria metrics
 kubectl wait --timeout=5m --for=jsonpath=.status.updateStatus=operational -n tenant-root vmalert/vmalert-shortterm vmalertmanager/alertmanager
-kubectl wait --timeout=5m --for=jsonpath=.status.status=operational -n tenant-root vlogs/generic
+kubectl wait --timeout=5m --for=jsonpath=.status.updateStatus=operational -n tenant-root vlogs/generic
 kubectl wait --timeout=5m --for=jsonpath=.status.clusterStatus=operational -n tenant-root vmcluster/shortterm vmcluster/longterm
 
 # Wait for grafana
