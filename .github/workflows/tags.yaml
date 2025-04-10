@@ -109,7 +109,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: newPr.data.number,
-                labels: ['release', 'ok-to-test']
+                labels: ['release']
               });
       
             } else {
@@ -157,3 +157,6 @@ jobs:
         if: steps.check_release.outputs.skip == 'false'
         run: |
           git push --delete origin ${GITHUB_REF#refs/tags/}
+
+      - name: Run tests
+        run: make test
