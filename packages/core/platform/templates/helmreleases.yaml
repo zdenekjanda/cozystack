@@ -80,3 +80,21 @@ spec:
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- range $name := $disabledComponents }}
+  {{- if ne $name "" }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: {{ $name }}
+  namespace: {{ index $dependencyNamespaces $name | default "cozy-system" }}
+  annotations:
+    cozystack.io/marked-for-deletion: "true"
+  labels:
+    cozystack.io/repository: system
+    cozystack.io/system-app: "true"
+spec:
+  suspend: true
+  {{- end }}
+{{- end }}
