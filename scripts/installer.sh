@@ -70,7 +70,7 @@ make -C packages/core/platform namespaces-apply
 ensure_fluxcd
 
 # Install platform chart
-make -C packages/core/platform apply
+make -C packages/core/platform reconcile
 
 # Install basic charts
 if ! flux_is_ok; then
@@ -93,5 +93,5 @@ done
 trap 'exit' INT TERM
 while true; do
   sleep 60 & wait
-  make -C packages/core/platform apply
+  make -C packages/core/platform reconcile
 done

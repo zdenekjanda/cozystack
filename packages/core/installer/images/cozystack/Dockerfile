@@ -30,6 +30,7 @@ FROM alpine:3.21
 
 RUN apk add --no-cache make
 RUN apk add helm kubectl --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk add yq
 
 COPY scripts /cozystack/scripts
 COPY --from=builder /src/packages/core /cozystack/packages/core
