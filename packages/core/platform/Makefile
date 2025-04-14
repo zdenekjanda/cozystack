@@ -7,18 +7,11 @@ show:
 	helm template -n $(NAMESPACE) $(NAME) . --dry-run=server $(API_VERSIONS_FLAGS)
 
 apply:
-	@echo "Applying active HelmReleases..."
 	helm template -n $(NAMESPACE) $(NAME) . --dry-run=server $(API_VERSIONS_FLAGS) \
-		| yq 'select(.metadata.annotations."cozystack.io/marked-for-deletion" != "true")' - \
 		| kubectl apply -f-
+	kubectl delete helmreleases.helm.toolkit.fluxcd.io -l cozystack.io/marked-for-deletion=true -A
 
-delete:
-	@echo "Deleting marked-for-deletion HelmReleases..."
-	helm template -n $(NAMESPACE) $(NAME) . --dry-run=server $(API_VERSIONS_FLAGS) \
-		| yq 'select(.metadata.annotations."cozystack.io/marked-for-deletion" == "true")' -  \
-		| kubectl delete -f - --ignore-not-found=true
-
-reconcile: apply delete
+reconcile: apply
 
 namespaces-show:
 	helm template -n $(NAMESPACE) $(NAME) . --dry-run=server $(API_VERSIONS_FLAGS) -s templates/namespaces.yaml
