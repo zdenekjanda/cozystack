@@ -191,4 +191,5 @@ jobs:
 
       # 12) Run tests
       - name: Run tests
+        if: steps.check_release.outputs.skip == 'false'
         run: make test
