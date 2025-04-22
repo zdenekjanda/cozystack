@@ -3,7 +3,7 @@ set -o pipefail
 set -e
 
 BUNDLE=$(set -x; kubectl get configmap -n cozy-system cozystack -o 'go-template={{index .data "bundle-name"}}')
-VERSION=12
+VERSION=$(find scripts/migrations -mindepth 1 -maxdepth 1 -type f | sort -V | awk -F/ 'END {print $NF+1}')
 
 run_migrations() {
   if ! kubectl get configmap -n cozy-system cozystack-version; then
