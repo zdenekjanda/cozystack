@@ -116,15 +116,24 @@ func (r *WorkloadMonitorReconciler) reconcileServiceForMonitor(
 
 	resources := make(map[string]resource.Quantity)
 
-	q := resource.MustParse("0")
+	quantity := resource.MustParse("0")
 
 	for _, ing := range svc.Status.LoadBalancer.Ingress {
 		if ing.IP != "" {
-			q.Add(resource.MustParse("1"))
+			quantity.Add(resource.MustParse("1"))
 		}
 	}
 
-	resources["public-ips"] = q
+	var resourceLabel string
+	if svc.Annotations != nil {
+		var ok bool
+		resourceLabel, ok = svc.Annotations["metallb.universe.tf/ip-allocated-from-pool"]
+		if !ok {
+			resourceLabel = "default"
+		}
+	}
+	resourceLabel = fmt.Sprintf("%s.ipaddresspool.metallb.io/requests.ipaddresses", resourceLabel)
+	resources[resourceLabel] = quantity
 
 	_, err := ctrl.CreateOrUpdate(ctx, r.Client, workload, func() error {
 		// Update owner references with the new monitor
@@ -165,7 +174,12 @@ func (r *WorkloadMonitorReconciler) reconcilePVCForMonitor(
 	resources := make(map[string]resource.Quantity)
 
 	for resourceName, resourceQuantity := range pvc.Status.Capacity {
-		resources[resourceName.String()] = resourceQuantity
+		storageClass := "default"
+		if pvc.Spec.StorageClassName != nil || *pvc.Spec.StorageClassName == "" {
+			storageClass = *pvc.Spec.StorageClassName
+		}
+		resourceLabel := fmt.Sprintf("%s.storageclass.storage.k8s.io/requests.%s", storageClass, resourceName.String())
+		resources[resourceLabel] = resourceQuantity
 	}
 
 	_, err := ctrl.CreateOrUpdate(ctx, r.Client, workload, func() error {
