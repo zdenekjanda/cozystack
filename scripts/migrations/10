@@ -10,3 +10,6 @@ if kubectl get helmrelease keycloak-configure -n cozy-keycloak; then
     reconcile.fluxcd.io/requestedAt="$timestamp" \
     --overwrite
 fi
+
+# Write version to cozystack-version config
+kubectl create configmap -n cozy-system cozystack-version --from-literal=version=11 --dry-run=client -o yaml | kubectl apply -f-
