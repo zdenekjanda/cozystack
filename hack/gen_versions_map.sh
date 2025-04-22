@@ -30,7 +30,7 @@ resolved_miss_map=$(
     fi
 
     # if commit is not HEAD, check if it's valid
-    if [ $commit != "HEAD" ]; then
+    if [ "x$commit" != "xHEAD" ]; then
       if [ $(git show "${commit}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}') != "${version}" ]; then
         echo "Commit $commit for $chart $version is not valid" >&2
         exit 1
