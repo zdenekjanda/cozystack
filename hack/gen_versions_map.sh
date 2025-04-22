@@ -31,7 +31,7 @@ resolved_miss_map=$(
 
     # if commit is not HEAD, check if it's valid
     if [ "$commit" != "HEAD" ]; then
-      if [ "$(git show "${commit}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}')" != "${version}" ]; then
+      if [ "$(git show "${commit}:./${chart}/Chart.yaml" | awk '$1 == "version:" {print $2}')" != "${version}" ]; then
         echo "Commit $commit for $chart $version is not valid" >&2
         exit 1
       fi
@@ -44,7 +44,7 @@ resolved_miss_map=$(
     # if commit is HEAD, but version is not found in HEAD, check all tags
     found_tag=""
     for tag in $search_commits; do
-      if [ "$(git show "${tag}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}')" = "${version}" ]; then
+      if [ "$(git show "${tag}:./${chart}/Chart.yaml" | awk '$1 == "version:" {print $2}')" = "${version}" ]; then
         found_tag=$(git rev-parse --short "${tag}")
         break
       fi
