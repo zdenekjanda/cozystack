@@ -16,3 +16,6 @@ if kubectl get helmrelease monitoring-agents -n cozy-monitoring; then
 fi
 
 kubectl delete pods -l app.kubernetes.io/component=kube-rbac-proxy -n cozy-monitoring
+
+# Write version to cozystack-version config
+kubectl create configmap -n cozy-system cozystack-version --from-literal=version=12 --dry-run=client -o yaml | kubectl apply -f-
