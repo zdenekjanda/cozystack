@@ -168,7 +168,10 @@ releases:
             {{- end }}
     {{- end }}
     {{- end }}
+      frontend:
+        resourcesPreset: "none"
       dashboard:
+        resourcesPreset: "none"
         {{- $cozystackBranding:= lookup "v1" "ConfigMap" "cozy-system" "cozystack-branding" }}
         {{- $branding := dig "data" "branding" "" $cozystackBranding }}
         {{- if $branding }}
