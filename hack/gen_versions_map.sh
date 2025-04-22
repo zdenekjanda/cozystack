@@ -24,14 +24,14 @@ search_commits=$(git ls-remote --tags origin | awk -F/ '$3 ~ /v[0-9]+.[0-9]+.[0-
 resolved_miss_map=$(
   echo "$miss_map" | while read -r chart version commit; do
     # if version is found in HEAD, it's HEAD
-    if [ $(awk '$1 == "version:" {print $2}' ./${chart}/Chart.yaml) = "${version}" ]; then
+    if [ "$(awk '$1 == "version:" {print $2}' ./${chart}/Chart.yaml)" = "${version}" ]; then
       echo "$chart $version HEAD"
       continue
     fi
 
     # if commit is not HEAD, check if it's valid
-    if [ "x$commit" != "xHEAD" ]; then
-      if [ $(git show "${commit}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}') != "${version}" ]; then
+    if [ "$commit" != "HEAD" ]; then
+      if [ "$(git show "${commit}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}')" != "${version}" ]; then
         echo "Commit $commit for $chart $version is not valid" >&2
         exit 1
       fi
@@ -44,7 +44,7 @@ resolved_miss_map=$(
     # if commit is HEAD, but version is not found in HEAD, check all tags
     found_tag=""
     for tag in $search_commits; do
-      if [ $(git show "${tag}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}') = "${version}" ]; then
+      if [ "$(git show "${tag}:./${chart}/Chart.yaml" 2>/dev/null | awk '$1 == "version:" {print $2}')" = "${version}" ]; then
         found_tag=$(git rev-parse --short "${tag}")
         break
       fi
