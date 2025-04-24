@@ -178,32 +178,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Ensure long‑lived maintenance branch release‑X.Y
-      - name: Ensure maintenance branch release‑${{ steps.tag.outputs.line }}
-        if: |
-          steps.check_release.outputs.skip == 'false' &&
-          steps.get_base.outputs.branch == 'main'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const branch = `release-${'${{ steps.tag.outputs.line }}'}`;
-            try {
-              await github.rest.repos.getBranch({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                branch
-              });
-              console.log(`Branch '${branch}' already exists`);
-            } catch (_) {
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                ref:   `refs/heads/${branch}`,
-                sha:   context.sha
-              });
-              console.log(`Branch '${branch}' created at ${context.sha}`);
-            }
-
       # Create release‑X.Y.Z branch and push (force‑update)
       - name: Create release branch
         if: steps.check_release.outputs.skip == 'false'
