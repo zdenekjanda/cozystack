@@ -1,4 +1,4 @@
-UBUNTU_CONTAINER_DISK_TAG = v1.30.1
+KUBERNETES_VERSION = v1.32
 KUBERNETES_PKG_TAG = $(shell awk '$$1 == "version:" {print $$2}' Chart.yaml)
 
 include ../../../scripts/common-envs.mk
@@ -12,8 +12,9 @@ image: image-ubuntu-container-disk image-kubevirt-cloud-provider image-kubevirt-
 image-ubuntu-container-disk:
 	docker buildx build --platform linux/amd64 --build-arg ARCH=amd64 images/ubuntu-container-disk \
 		--provenance false \
-		--tag $(REGISTRY)/ubuntu-container-disk:$(call settag,$(UBUNTU_CONTAINER_DISK_TAG)) \
-		--tag $(REGISTRY)/ubuntu-container-disk:$(call settag,$(UBUNTU_CONTAINER_DISK_TAG)-$(TAG)) \
+		--build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+		--tag $(REGISTRY)/ubuntu-container-disk:$(call settag,$(KUBERNETES_VERSION)) \
+		--tag $(REGISTRY)/ubuntu-container-disk:$(call settag,$(KUBERNETES_VERSION)-$(TAG)) \
 		--cache-from type=registry,ref=$(REGISTRY)/ubuntu-container-disk:latest \
 		--cache-to type=inline \
 		--metadata-file images/ubuntu-container-disk.json \
