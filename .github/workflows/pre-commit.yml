@@ -1,14 +1,13 @@
 name: Pre-Commit Checks
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+    types: [labeled, opened, synchronize, reopened]
     paths-ignore:
       - '**.md'
+
 concurrency:
-  group: pre-commit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: pre-commit-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
