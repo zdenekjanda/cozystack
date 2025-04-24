@@ -25,7 +25,7 @@ image-ubuntu-container-disk:
 		--push=$(PUSH) \
 		--label "org.opencontainers.image.source=https://github.com/cozystack/cozystack" \
 		--load=$(LOAD)
-	echo "$(REGISTRY)/ubuntu-container-disk:$(call settag,$(UBUNTU_CONTAINER_DISK_TAG))@$$(yq e '."containerimage.digest"' images/ubuntu-container-disk.json -o json -r)" \
+	echo "$(REGISTRY)/ubuntu-container-disk:$(call settag,$(KUBERNETES_VERSION))@$$(yq e '."containerimage.digest"' images/ubuntu-container-disk.json -o json -r)" \
 		> images/ubuntu-container-disk.tag
 	rm -f images/ubuntu-container-disk.json
 
