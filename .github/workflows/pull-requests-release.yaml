@@ -12,8 +12,8 @@ jobs:
       contents: read
       packages: write
 
+    # Run only when the PR carries the "release" label and not closed.
     if: |
-      contains(github.event.pull_request.labels.*.name, 'ok-to-test') &&
       contains(github.event.pull_request.labels.*.name, 'release') &&
       github.event.action != 'closed'
 
