@@ -7,6 +7,10 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
+concurrency:
+  group: pre-commit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: ubuntu-22.04

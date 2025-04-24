@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*.*.*' # vX.Y.Z or vX.Y.Z-rcN
 
+concurrency:
+  group: tags-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   prepare-release:
     name: Prepare Release
