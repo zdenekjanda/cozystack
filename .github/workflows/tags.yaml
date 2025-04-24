@@ -195,7 +195,7 @@ jobs:
               });
               console.log(`Branch '${branch}' already exists`);
             } catch (_) {
-              await github.git.createRef({
+              await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 ref:   `refs/heads/${branch}`,
