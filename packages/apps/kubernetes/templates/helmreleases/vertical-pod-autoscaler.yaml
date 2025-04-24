@@ -56,7 +56,7 @@ spec:
     remediation:
       retries: -1
   values:
-    {{- toYaml (merge (fromYaml (include "cozystack.defaultVPAValues" .)) .Values.addons.verticalPodAutoscaler.valuesOverride) | nindent 4 }}
+    {{- toYaml (deepCopy .Values.addons.verticalPodAutoscaler.valuesOverride | mergeOverwrite (fromYaml (include "cozystack.defaultVPAValues" .))) | nindent 4 }}
   dependsOn:
   {{- if lookup "helm.toolkit.fluxcd.io/v2" "HelmRelease" .Release.Namespace .Release.Name }}
   - name: {{ .Release.Name }}
