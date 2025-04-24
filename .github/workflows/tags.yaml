@@ -174,7 +174,7 @@ jobs:
         if: steps.check_release.outputs.skip == 'false'
         run: |
           make assets
-          make upload_assets VERSION=${{ steps.tag.outputs.version }}
+          make upload_assets VERSION=${{ steps.tag.outputs.tag }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
