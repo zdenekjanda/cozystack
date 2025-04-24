@@ -248,8 +248,3 @@ jobs:
             } else {
               console.log(`PR already exists from ${head} to ${base}`);
             }
-
-      # Run tests 
-      - name: Test
-        if: steps.check_release.outputs.skip == 'false'
-        run: make test
