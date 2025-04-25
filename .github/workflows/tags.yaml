@@ -19,6 +19,7 @@ jobs:
       contents: write
       packages: write
       pull-requests: write
+      actions: write
 
     steps:
       # Check if a non-draft release with this tag already exists
@@ -239,7 +240,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner:       context.repo.owner,
               repo:        context.repo.repo,
-              workflow_id: '.github/workflows/pull-requests-release.yaml',
+              workflow_id: 'pull-requests-release.yaml',
               ref:         process.env.DISPATCH_REF,
               inputs: {
                 sha: process.env.DISPATCH_SHA
