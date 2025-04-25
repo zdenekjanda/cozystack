@@ -3,11 +3,6 @@ name: Releasing PR
 on:
   pull_request:
     types: [labeled, opened, synchronize, reopened, closed]
-  workflow_dispatch:
-    inputs:
-      sha:
-        description: "Commit SHA to test"
-        required: true
 
 concurrency:
   group: pull-requests-release-${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -21,19 +16,15 @@ jobs:
       contents: read
       packages: write
 
-    # Run only when the PR carries the "release" label and not closed or via workflow_dispatch
+    # Run only when the PR carries the "release" label and not closed.
     if: |
-      (github.event_name == 'pull_request' &&
-       contains(github.event.pull_request.labels.*.name, 'release') &&
-       github.event.action != 'closed')
-      || github.event_name == 'workflow_dispatch'
+      contains(github.event.pull_request.labels.*.name, 'release') &&
+      github.event.action != 'closed'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # for workflow_dispatch take a specific SHA, otherwise — head.sha PR
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.sha }}
           fetch-depth: 0
           fetch-tags: true
 
