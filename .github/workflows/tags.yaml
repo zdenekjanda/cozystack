@@ -222,3 +222,25 @@ jobs:
             } else {
               console.log(`PR already exists from ${head} to ${base}`);
             }
+
+      # Run tests
+      - name: Trigger release-verify tests
+        if: steps.check_release.outputs.skip == 'false'
+        uses: actions/github-script@v7
+        env:
+          GH_TOKEN:       ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_REF:   ${{ steps.get_base.outputs.branch }}  # main or release-X.Y
+          DISPATCH_SHA:   ${{ github.sha }}                     # commit for tests
+        with:
+          github-token: ${{ env.GH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner:       context.repo.owner,
+              repo:        context.repo.repo,
+              workflow_id: '.github/workflows/pull-requests-release.yaml',
+              ref:         process.env.DISPATCH_REF,
+              inputs: {
+                sha: process.env.DISPATCH_SHA
+              }
+            });
+            console.log(`🔔 verify-job triggered on ${process.env.DISPATCH_SHA}`);
