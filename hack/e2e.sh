@@ -231,7 +231,14 @@ timeout 60 sh -c 'until kubectl get hr -A | grep cozy; do sleep 1; done'
 
 sleep 5
 
+# Wait for all HelmReleases to be installed
 kubectl get hr -A | awk 'NR>1 {print "kubectl wait --timeout=15m --for=condition=ready -n " $1 " hr/" $2 " &"} END{print "wait"}' | sh -x
+
+failed_hrs=$(kubectl get hr -A | grep -v True)
+if [ -n "$(echo "$failed_hrs" | grep -v NAME)" ]; then
+  printf 'Failed HelmReleases:\n%s\n' "$failed_hrs" >&2
+  exit 1
+fi
 
 # Wait for Cluster-API providers
 timeout 60 sh -c 'until kubectl get deploy -n cozy-cluster-api capi-controller-manager capi-kamaji-controller-manager capi-kubeadm-bootstrap-controller-manager capi-operator-cluster-api-operator capk-controller-manager; do sleep 1; done'
