@@ -16,6 +16,6 @@ ifeq ($(COZYSTACK_VERSION),)
 endif
 
 # Get the name of the default docker buildx builder
-BUILDER ?= $(shell docker buildx inspect | head -n2 | awk '/^Name:/{print $$NF}')
+BUILDER ?= $(shell docker buildx inspect --bootstrap | head -n2 | awk '/^Name:/{print $$NF}')
 # Get platforms supported by the builder
-PLATFORM ?= $(shell docker buildx inspect $(BUILDER) | egrep '^Platforms:' | egrep -o 'linux/amd64|linux/arm64' | sort -u | xargs | sed 's/ /,/g')
+PLATFORM ?= $(shell docker buildx inspect --bootstrap $(BUILDER) | egrep '^Platforms:' | egrep -o 'linux/amd64|linux/arm64' | sort -u | xargs | sed 's/ /,/g')
