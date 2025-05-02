@@ -15,15 +15,7 @@ ifeq ($(COZYSTACK_VERSION),)
     COZYSTACK_VERSION = $(patsubst v%,%,$(shell git describe --tags))
 endif
 
-# Calculate PLATFORM based on current docker daemon arch
-ifndef PLATFORM
-  DOCKER_DAEMON_ARCH := $(shell docker info --format='{{.Architecture}}')
-  ifeq ($(DOCKER_DAEMON_ARCH),x86_64)
-      PLATFORM := linux/amd64
-  else ifeq ($(DOCKER_DAEMON_ARCH),aarch64)
-      PLATFORM := linux/arm64
-  else
-      $(error Unsupported architecture: "$(DOCKER_DAEMON_ARCH)")
-  endif
-  undefine DOCKER_DAEMON_ARCH
-endif
+# Get the name of the default docker buildx builder
+BUILDER ?= $(shell docker buildx inspect | head -n2 | awk '/^Name:/{print $$NF}')
+# Get platforms supported by the builder
+PLATFORM ?= $(shell docker buildx inspect $(BUILDER) | egrep '^Platforms:' | egrep -o 'linux/amd64|linux/arm64' | sort -u | xargs | sed 's/ /,/g')
