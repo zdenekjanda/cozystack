@@ -145,6 +145,16 @@
             }
           }
         },
+        "cilium": {
+          "type": "object",
+          "properties": {
+            "valuesOverride": {
+              "type": "object",
+              "description": "Custom values to override",
+              "default": {}
+            }
+          }
+        },
         "ingressNginx": {
           "type": "object",
           "properties": {
