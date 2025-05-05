@@ -42,6 +42,12 @@ addons:
     enabled: false
     valuesOverride: {}
 
+  ## Cilium CNI plugin
+  ##
+  cilium:
+    ## @param addons.cilium.valuesOverride Custom values to override
+    valuesOverride: {}
+
   ## Ingress-NGINX Controller
   ##
   ingressNginx:
