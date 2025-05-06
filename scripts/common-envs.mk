@@ -16,6 +16,9 @@ ifeq ($(COZYSTACK_VERSION),)
 endif
 
 # Get the name of the default docker buildx builder
-BUILDER ?= $(shell docker buildx inspect --bootstrap | head -n2 | awk '/^Name:/{print $$NF}')
+BUILDER ?= $(shell jq -r '.Name' ~/.docker/buildx/current)
 # Get platforms supported by the builder
+# TODO: figure out how to get runners status dynamically, in json
+# PLATFORM ?= $(shell jq -r '.Nodes[] | .Platforms | map(.os + "/" + .architecture) | join(",")' ~/.docker/buildx/instances/$(BUILDER))
 PLATFORM ?= $(shell docker buildx inspect --bootstrap $(BUILDER) | egrep '^Platforms:' | egrep -o 'linux/amd64|linux/arm64' | sort -u | xargs | sed 's/ /,/g')
+
