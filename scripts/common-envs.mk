@@ -15,10 +15,8 @@ ifeq ($(COZYSTACK_VERSION),)
     COZYSTACK_VERSION = $(patsubst v%,%,$(shell git describe --tags))
 endif
 
-# Get the name of the default docker buildx builder
-BUILDER ?= $(shell jq -r '.Name' ~/.docker/buildx/current)
+# Get the name of the selected docker buildx builder
+BUILDER ?= $(shell docker buildx inspect --bootstrap | head -n2 | awk '/^Name:/{print $$NF}')
 # Get platforms supported by the builder
-# TODO: figure out how to get runners status dynamically, in json
-# PLATFORM ?= $(shell jq -r '.Nodes[] | .Platforms | map(.os + "/" + .architecture) | join(",")' ~/.docker/buildx/instances/$(BUILDER))
-PLATFORM ?= $(shell docker buildx inspect --bootstrap $(BUILDER) | egrep '^Platforms:' | egrep -o 'linux/amd64|linux/arm64' | sort -u | xargs | sed 's/ /,/g')
+PLATFORM ?= $(shell docker buildx ls --format=json | jq -r 'select(.Name == "$(BUILDER)") | [.Nodes[].Platforms // []] | flatten | unique | map(select(test("^linux/amd64$$|^linux/arm64$$"))) | join(",")')
 
