@@ -6,7 +6,6 @@ build-deps:
 	@tar --version | grep -q GNU || (echo "GNU tar is required" && exit 1)
 	@sed --version | grep -q GNU || (echo "GNU sed is required" && exit 1)
 	@awk --version | grep -q GNU || (echo "GNU awk is required" && exit 1)
-	@docker info --format=json | jq -r '"v0.13.0\n\(.ClientInfo.Plugins[] | select(.Name == "buildx") | .Version)"' | sort -CV || (echo "docker buildx plugin version >=0.13.0 is required" && exit 1)
 
 build: build-deps
 	make -C packages/apps/http-cache image
