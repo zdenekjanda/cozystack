@@ -48,6 +48,12 @@ addons:
     ## @param addons.cilium.valuesOverride Custom values to override
     valuesOverride: {}
 
+  ## Gateway API
+  ##
+  gatewayAPI:
+    ## @param addons.gatewayAPI.enabled Enables the Gateway API
+    enabled: false
+
   ## Ingress-NGINX Controller
   ##
   ingressNginx:
