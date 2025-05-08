@@ -30,6 +30,7 @@ spec:
                 patch
                 helmrelease
                 {{ .Release.Name }}-cilium
+                {{ .Release.Name }}-gateway-api-crds
                 {{ .Release.Name }}-csi
                 {{ .Release.Name }}-cert-manager
                 {{ .Release.Name }}-cert-manager-crds

@@ -53,6 +53,6 @@ spec:
     namespace: {{ .Release.Namespace }}
   {{- end }}
   {{- if $.Values.addons.gatewayAPI.enabled }}
-  - name: {{ .Release.Name }}-gateway-api
+  - name: {{ .Release.Name }}-gateway-api-crds
     namespace: {{ .Release.Namespace }}
   {{- end }}

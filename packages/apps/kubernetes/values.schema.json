@@ -155,6 +155,16 @@
             }
           }
         },
+        "gatewayAPI": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enables the Gateway API",
+              "default": false
+            }
+          }
+        },
         "ingressNginx": {
           "type": "object",
           "properties": {
