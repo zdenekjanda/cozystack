@@ -13,7 +13,7 @@ generate:
 	rm -f values.schema.json.tmp
 
 image:
-	docker buildx build --platform linux/amd64 images/grafana \
+	docker buildx build images/grafana \
 		--provenance false \
 		--builder=$(BUILDER) \
 		--platform=$(PLATFORM) \
