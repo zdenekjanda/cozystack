@@ -34,7 +34,7 @@ spec:
           enabled: false
         {{- end }}
         service:
-          {{- if and (eq $exposeIngress .Release.Namespace) $exposeExternalIPs }}
+          {{- if and (ne $exposeExternalIPs "") (eq $exposeIngress .Release.Namespace) }}
           externalIPs:
             {{- toYaml (splitList "," $exposeExternalIPs) | nindent 12 }}
           type: ClusterIP
