@@ -150,7 +150,7 @@ spec:
     ingress:
       extraAnnotations:
         nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-      hostname: {{ .Values.host | default (printf "%s.%s" .Release.Name $host) }}
+      hostname: {{ .Values.host | default (printf "%s.%s" .Release.Name $host) }}:443
       className: "{{ $ingress }}"
   deployment:
     podAdditionalMetadata:
