@@ -89,21 +89,41 @@ jobs:
             }
             const line = `${match[1]}.${match[2]}`;
             const branch = `release-${line}`;
+
+            // Get main branch commit for the tag
+            const ref = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              ref:   `tags/${tag}`
+            });
+            const commitSha = ref.data.object.sha;
+
             try {
+              // Check if branch exists
               await github.rest.repos.getBranch({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 branch
               });
-              console.log(`Branch '${branch}' already exists`);
-            } catch (_) {
+
+              // Force update existing branch to the tag commit
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                ref:   `heads/${branch}`,
+                sha:   commitSha,
+                force: true
+              });
+              console.log(`🔁 Force-updated '${branch}' to ${commitSha}`);
+            } catch (err) {
+              // Branch doesn't exist, create it
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 ref:   `refs/heads/${branch}`,
-                sha:   context.sha
+                sha:   commitSha
               });
-              console.log(`✅ Branch '${branch}' created at ${context.sha}`);
+              console.log(`✅ Created branch '${branch}' at ${commitSha}`);
             }
 
       # Get the latest published release
