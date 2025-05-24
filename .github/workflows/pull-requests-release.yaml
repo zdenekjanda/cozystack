@@ -157,12 +157,12 @@ jobs:
         with:
           script: |
             const tag = '${{ steps.get_tag.outputs.tag }}';              // v0.31.5-rc.1
-            const m = tag.match(/^v(\d+\.\d+\.\d+)(-rc\.\d+)?$/);
+            const m = tag.match(/^v(\d+\.\d+\.\d+)(-(?:alpha|beta|rc)\.\d+)?$/);
             if (!m) {
-              core.setFailed(`❌ tag '${tag}' must match 'vX.Y.Z' or 'vX.Y.Z-rc.N'`);
+              core.setFailed(`❌ tag '${tag}' must match 'vX.Y.Z' or 'vX.Y.Z-(alpha|beta|rc).N'`);
               return;
             }
-            const version = m[1] + (m[2] ?? '');                         // 0.31.5‑rc.1
+            const version = m[1] + (m[2] ?? '');                         // 0.31.5-rc.1
             const isRc    = Boolean(m[2]);
             core.setOutput('is_rc',      isRc);
             const outdated = '${{ steps.semver.outputs.comparison-result }}' === '<';
