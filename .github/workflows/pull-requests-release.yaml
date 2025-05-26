@@ -96,34 +96,36 @@ jobs:
               repo:  context.repo.repo,
               ref:   `tags/${tag}`
             });
+
             const commitSha = ref.data.object.sha;
 
             try {
-              // Check if branch exists
               await github.rest.repos.getBranch({
                 owner: context.repo.owner,
-                repo:  context.repo.repo,
+                repo: context.repo.repo,
                 branch
               });
-
-              // Force update existing branch to the tag commit
+           
               await github.rest.git.updateRef({
                 owner: context.repo.owner,
-                repo:  context.repo.repo,
-                ref:   `refs/heads/${branch}`,
-                sha:   commitSha,
+                repo: context.repo.repo,
+                ref: `heads/${branch}`,
+                sha: commitSha,
                 force: true
               });
               console.log(`🔁 Force-updated '${branch}' to ${commitSha}`);
             } catch (err) {
-              // Branch doesn't exist, create it
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                ref:   `refs/heads/${branch}`,
-                sha:   commitSha
-              });
-              console.log(`✅ Created branch '${branch}' at ${commitSha}`);
+              if (err.status === 404) {
+                await github.rest.git.createRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `refs/heads/${branch}`,
+                  sha: commitSha
+                });
+                console.log(`✅ Created branch '${branch}' at ${commitSha}`);
+              } else {
+                console.error('Unexpected error --', err);
+              }
             }
 
       # Get the latest published release
