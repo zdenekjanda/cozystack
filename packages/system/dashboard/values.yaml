@@ -36,7 +36,7 @@ kubeapps:
       registry: ghcr.io/cozystack/cozystack
       repository: kubeapps-apis
       tag: v0.31.0-rc.3
-      digest: "sha256:bf0522511089b3653e40726b875b6b4edea7a2efa1f9ac13b10dd723b91b9525"
+      digest: "sha256:dcd67227660e30dd86d3f91082d83e00b0670878816e3d398397460cab399afb"
     pluginConfig:
       flux:
         packages:
