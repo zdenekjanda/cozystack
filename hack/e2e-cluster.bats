@@ -86,7 +86,7 @@ EOF
 @test "Prepare VM disks" {
   for i in 1 2 3; do
     cp nocloud-amd64.raw srv${i}/system.img
-    qemu-img resize srv${i}/system.img 20G
+    qemu-img resize srv${i}/system.img 50G
     qemu-img create srv${i}/data.img 100G
   done
 }
