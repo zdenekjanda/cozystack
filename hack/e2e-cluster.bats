@@ -3,12 +3,14 @@
 # Cozystack end‑to‑end provisioning test (Bats)
 # -----------------------------------------------------------------------------
 
-@test "Environment variable COZYSTACK_INSTALLER_YAML is defined" {
-  if [ -z "${COZYSTACK_INSTALLER_YAML:-}" ]; then
-    echo 'COZYSTACK_INSTALLER_YAML environment variable is not set!' >&2
-    echo >&2
-    echo 'Please export it with the following command:' >&2
-    echo '  export COZYSTACK_INSTALLER_YAML=$(helm template -n cozy-system installer packages/core/installer)' >&2
+@test "Required installer assets exist" {
+  if [ ! -f _out/assets/cozystack-installer.yaml ]; then
+    echo "Missing: _out/assets/cozystack-installer.yaml" >&2
+    exit 1
+  fi
+
+  if [ ! -f _out/assets/nocloud-amd64.raw.xz ]; then
+    echo "Missing: _out/assets/nocloud-amd64.raw.xz" >&2
     exit 1
   fi
 }
@@ -70,13 +72,15 @@ EOF
   done
 }
 
-@test "Download Talos NoCloud image" {
-  if [ ! -f nocloud-amd64.raw ]; then
-    wget https://github.com/cozystack/cozystack/releases/latest/download/nocloud-amd64.raw.xz \
-      -O nocloud-amd64.raw.xz --show-progress --output-file /dev/stdout --progress=dot:giga 2>/dev/null
-    rm -f nocloud-amd64.raw
-    xz --decompress nocloud-amd64.raw.xz
+@test "Use Talos NoCloud image from assets" {
+  if [ ! -f _out/assets/nocloud-amd64.raw.xz ]; then
+    echo "Missing _out/assets/nocloud-amd64.raw.xz" 2>&1
+    exit 1
   fi
+
+  rm -f nocloud-amd64.raw
+  cp _out/assets/nocloud-amd64.raw.xz .
+  xz --decompress nocloud-amd64.raw.xz
 }
 
 @test "Prepare VM disks" {
@@ -243,8 +247,8 @@ EOF
           --from-literal=api-server-endpoint=https://192.168.123.10:6443 \
           --dry-run=client -o yaml | kubectl apply -f -
 
-  # Apply installer manifests from env variable
-  echo "$COZYSTACK_INSTALLER_YAML" | kubectl apply -f -
+  # Apply installer manifests from file
+  kubectl apply -f _out/assets/cozystack-installer.yaml
 
   # Wait for the installer deployment to become available
   kubectl wait deployment/cozystack -n cozy-system --timeout=1m --for=condition=Available

@@ -37,11 +37,16 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Upload installer artifact
+      - name: Build Talos image
+        run: make -C packages/core/installer talos-nocloud
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: cozystack-installer
-          path: _out/assets/cozystack-installer.yaml
+          name: cozystack-artefacts
+          path: |
+            _out/assets/nocloud-amd64.raw.xz
+            _out/assets/cozystack-installer.yaml
 
   test:
     name: Test
@@ -59,10 +64,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Download installer artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: cozystack-installer
+          name: cozystack-artefacts
           path: _out/assets/
 
       - name: Test

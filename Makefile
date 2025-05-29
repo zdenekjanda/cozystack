@@ -43,7 +43,7 @@ manifests:
 	(cd packages/core/installer/; helm template -n cozy-installer installer .) > _out/assets/cozystack-installer.yaml
 
 assets:
-	make -C packages/core/installer/ assets
+	make -C packages/core/installer assets
 
 test:
 	make -C packages/core/testing apply
