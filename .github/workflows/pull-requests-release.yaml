@@ -16,7 +16,6 @@ jobs:
       contents: read
       packages: write
 
-    # Run only when the PR carries the "release" label and not closed.
     if: |
       contains(github.event.pull_request.labels.*.name, 'release') &&
       github.event.action != 'closed'
@@ -35,8 +34,36 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
 
+      - name: Extract tag from PR branch
+        id: get_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const m = branch.match(/^release-(\d+\.\d+\.\d+(?:[-\w\.]+)?)$/);
+            if (!m) {
+              core.setFailed(`❌ Branch '${branch}' does not match 'release-X.Y.Z[-suffix]'`);
+              return;
+            }
+            const tag = `v${m[1]}`;
+            core.setOutput('tag', tag);
+
+      - name: Download required release assets
+        run: |
+          mkdir -p _out/assets
+          gh release download ${{ steps.get_tag.outputs.tag }} \
+            --repo ${{ github.repository }} \
+            --dir _out/assets \
+            --pattern cozystack-installer.yaml \
+            --pattern nocloud-amd64.raw.xz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List downloaded files
+        run: ls -lh _out/assets/
+
       - name: Run tests
-        run: make manifests && make test
+        run: make test
 
   finalize:
     name: Finalize Release
