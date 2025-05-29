@@ -9,8 +9,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e:
-    name: Build and Test
+  build:
+    name: Build
     runs-on: [self-hosted]
     permissions:
       contents: read
@@ -36,6 +36,34 @@ jobs:
 
       - name: Build
         run: make build
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cozystack-installer
+          path: _out/assets/cozystack-installer.yaml
+
+  test:
+    name: Test
+    runs-on: [self-hosted]
+    needs: build
+
+    # Never run when the PR carries the "release" label.
+    if: |
+      !contains(github.event.pull_request.labels.*.name, 'release')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download installer artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cozystack-installer
+          path: _out/assets/
 
       - name: Test
         run: make test

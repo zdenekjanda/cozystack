@@ -36,7 +36,7 @@ jobs:
           registry: ghcr.io
 
       - name: Run tests
-        run: make test
+        run: make manifests && make test
 
   finalize:
     name: Finalize Release
