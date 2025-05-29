@@ -48,19 +48,43 @@ jobs:
             const tag = `v${m[1]}`;
             core.setOutput('tag', tag);
 
-      - name: Download required release assets
+      - name: Find draft release and download assets
+        id: fetch_assets
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ steps.get_tag.outputs.tag }}';
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo:  context.repo.repo
+            });
+            const draft = releases.data.find(r => r.tag_name === tag && r.draft);
+            if (!draft) {
+              core.setFailed(`❌ Draft release for ${tag} not found`);
+              return;
+            }
+
+            const getAsset = (name) =>
+              draft.assets.find(asset => asset.name === name)?.browser_download_url;
+
+            const installer = getAsset("cozystack-installer.yaml");
+            const disk = getAsset("nocloud-amd64.raw.xz");
+
+            if (!installer || !disk) {
+              core.setFailed(`❌ Missing required assets in release: ${[!installer && "cozystack-installer.yaml", !disk && "nocloud-amd64.raw.xz"].filter(Boolean).join(', ')}`);
+              return;
+            }
+
+            core.setOutput("installer_url", installer);
+            core.setOutput("disk_url", disk);
+
+      - name: Download required assets
         run: |
           mkdir -p _out/assets
-          gh release download ${{ steps.get_tag.outputs.tag }} \
-            --repo ${{ github.repository }} \
-            --dir _out/assets \
-            --pattern cozystack-installer.yaml \
-            --pattern nocloud-amd64.raw.xz
+          curl -sSL -H "Authorization: token $GH_TOKEN" -o _out/assets/cozystack-installer.yaml "${{ steps.fetch_assets.outputs.installer_url }}"
+          curl -sSL -H "Authorization: token $GH_TOKEN" -o _out/assets/nocloud-amd64.raw.xz "${{ steps.fetch_assets.outputs.disk_url }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: List downloaded files
-        run: ls -lh _out/assets/
 
       - name: Run tests
         run: make test
