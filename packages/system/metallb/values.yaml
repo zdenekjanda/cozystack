@@ -8,4 +8,4 @@ metallb:
   speaker:
     image:
       repository: ghcr.io/cozystack/cozystack/metallb-speaker
-      tag: v0.14.9@sha256:ae39d960704a5c66d3758b75b0a088eb8a41ad34afcf88889d27269ad0147fd1
+      tag: v0.14.9@sha256:a65437314ef23acf030afb44c3a25c5cb6ee813041e9b36ee7e0988a1e21b762
