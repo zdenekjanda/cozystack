@@ -48,43 +48,49 @@ jobs:
             const tag = `v${m[1]}`;
             core.setOutput('tag', tag);
 
-      - name: Find draft release and download assets
+      - name: Find draft release and get asset IDs
         id: fetch_assets
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             const tag = '${{ steps.get_tag.outputs.tag }}';
             const releases = await github.rest.repos.listReleases({
               owner: context.repo.owner,
-              repo:  context.repo.repo
+              repo: context.repo.repo,
+              per_page: 100
             });
             const draft = releases.data.find(r => r.tag_name === tag && r.draft);
             if (!draft) {
-              core.setFailed(`❌ Draft release for ${tag} not found`);
+              core.setFailed(`Draft release '${tag}' not found`);
               return;
             }
-
-            const getAsset = (name) =>
-              draft.assets.find(asset => asset.name === name)?.browser_download_url;
-
-            const installer = getAsset("cozystack-installer.yaml");
-            const disk = getAsset("nocloud-amd64.raw.xz");
-
-            if (!installer || !disk) {
-              core.setFailed(`❌ Missing required assets in release: ${[!installer && "cozystack-installer.yaml", !disk && "nocloud-amd64.raw.xz"].filter(Boolean).join(', ')}`);
+            const findAssetId = (name) =>
+              draft.assets.find(a => a.name === name)?.id;
+            const installerId = findAssetId("cozystack-installer.yaml");
+            const diskId = findAssetId("nocloud-amd64.raw.xz");
+            if (!installerId || !diskId) {
+              core.setFailed("Missing required assets");
               return;
             }
-
-            core.setOutput("installer_url", installer);
-            core.setOutput("disk_url", disk);
-
-      - name: Download required assets
+            core.setOutput("installer_id", installerId);
+            core.setOutput("disk_id", diskId);
+      
+      - name: Download assets from GitHub API
         run: |
           mkdir -p _out/assets
-          curl -sSL -H "Authorization: token $GH_TOKEN" -o _out/assets/cozystack-installer.yaml "${{ steps.fetch_assets.outputs.installer_url }}"
-          curl -sSL -H "Authorization: token $GH_TOKEN" -o _out/assets/nocloud-amd64.raw.xz "${{ steps.fetch_assets.outputs.disk_url }}"
+          curl -sSL \
+            -H "Authorization: token ${GH_PAT}" \
+            -H "Accept: application/octet-stream" \
+            -o _out/assets/cozystack-installer.yaml \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${{ steps.fetch_assets.outputs.installer_id }}"
+          curl -sSL \
+            -H "Authorization: token ${GH_PAT}" \
+            -H "Accept: application/octet-stream" \
+            -o _out/assets/nocloud-amd64.raw.xz \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${{ steps.fetch_assets.outputs.disk_id }}"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
 
       - name: Run tests
         run: make test
