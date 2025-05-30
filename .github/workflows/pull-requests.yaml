@@ -33,9 +33,13 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/.docker
 
       - name: Build
         run: make build
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/.docker
 
       - name: Build Talos image
         run: make -C packages/core/installer talos-nocloud
