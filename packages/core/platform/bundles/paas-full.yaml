@@ -23,6 +23,12 @@ releases:
   namespace: cozy-fluxcd
   dependsOn: [fluxcd-operator,cilium,kubeovn]
 
+- name: gateway-api-crds
+  releaseName: gateway-api-crds
+  chart: cozy-gateway-api-crds
+  namespace: cozy-system
+  dependsOn: []
+
 - name: cilium
   releaseName: cilium
   chart: cozy-cilium
@@ -33,6 +39,7 @@ releases:
   - values.yaml
   - values-talos.yaml
   - values-kubeovn.yaml
+  dependsOn: [gateway-api-crds]
 
 - name: cilium-networkpolicy
   releaseName: cilium-networkpolicy

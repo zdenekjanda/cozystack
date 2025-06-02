@@ -16,5 +16,7 @@ cilium:
     repository: ghcr.io/cozystack/cozystack/cilium
     tag: 1.17.3
     digest: "sha256:f95e30fd8e7608f61c38344bb9f558f60f4d81bccb8e399836911e4feec2b40a"
+  gatewayAPI:
+    enabled: true
   envoy:
-    enabled: false
+    enabled: true
